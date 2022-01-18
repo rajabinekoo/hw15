@@ -1,11 +1,6 @@
 const alert = $("#alert");
 $(alert).hide();
 
-function isEmpty(element) {
-  if (element.value === "") return true;
-  return false;
-}
-
 function changeAlertState(success) {
   if (success) {
     $(alert).removeClass("alert-danger");
@@ -28,7 +23,7 @@ function showMessage(msg, success = false, final = function () {
 }
 
 $(function () {
-  $("#signupForm").submit(function (e) {
+  $("#loginForm").submit(function (e) {
     e.preventDefault();
     let body = {};
     for (const input of this.elements) {
@@ -36,23 +31,24 @@ $(function () {
       if (name === "btn") {
         continue;
       }
-      if (isEmpty(input) && name !== "gender") {
-        return showError(`${name} is required.`);
-      }
       const value = input.value;
       body[name] = value;
     }
     $.ajax({
       type: "POST",
-      url: "/auth/signup",
+      url: "/auth/login",
       data: JSON.stringify(body),
       contentType: "application/json; charset=utf-8",
       success: function (response) {
+        localStorage.setItem("userKey", response.key);
         showMessage(response.message, true, function () {
-          window.location.href = "/login";
+          window.location.href = "/dashboard";
         });
       },
       error: function (xhr, status, err) {
+        if (xhr.status === 404) {
+          return showMessage("User does not exist.", false);
+        }
         const json = JSON.parse(xhr.responseText);
         showMessage(json.errors[0].message, false);
       },

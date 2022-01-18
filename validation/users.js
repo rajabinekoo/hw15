@@ -8,7 +8,6 @@ const createUserSchema = [
   {
     name: "password",
     required: true,
-    minLength: [4, "password should be greater then 4 character."],
     pattern: [
       "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$",
       "Minimum eight characters, at least one uppercase letter, one lowercase letter and one number.",
@@ -32,6 +31,24 @@ const createUserSchema = [
   },
 ];
 
+const loginSchema = [
+  {
+    name: "username",
+    required: true,
+    minLength: [4, "username should be greater then 4 character."],
+    maxLength: [20, "username should be less then 20 character."],
+  },
+  {
+    name: "password",
+    required: true,
+    pattern: [
+      "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9]).{8,}$",
+      "Minimum eight characters, at least one uppercase letter, one lowercase letter and one number.",
+    ],
+  },
+];
+
 module.exports = {
   createUserSchema,
+  loginSchema,
 };
