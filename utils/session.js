@@ -1,18 +1,15 @@
-const {v4: uuidv4} = require('uuid');
 const User = require("../models/users");
-
-function Session(id) {
-  this.userId = id;
-  this.key = uuidv4();
-}
+const {v4: uuidv4} = require('uuid');
+const Redis = require("ioredis");
+const redis = new Redis();
 
 async function tokenChecker(req, res, next) {
   try {
-    const userKey = req.header("authorization");
-    if (!userKey) return res.status(401).send();
-    const targetSession = global.sessionList.find(el => el.key === userKey);
-    if (!targetSession) return res.status(401).send();
-    const targetUser = await User.findById(targetSession.userId);
+    const token = req.header("authorization");
+    if (!token) return res.status(401).send();
+    const targetUserId = await redis.get(token);
+    if (!targetUserId) return res.status(401).send();
+    const targetUser = await User.findById(targetUserId);
     if (!targetUser) return res.status(401).send();
     res.locals.user = targetUser;
     next();
@@ -21,9 +18,14 @@ async function tokenChecker(req, res, next) {
   }
 }
 
-global.sessionList = [];
+async function generateToken(userid) {
+  const token = uuidv4();
+  await redis.set(token, userid);
+  await redis.expire(token, 1800);
+  return token;
+}
 
 module.exports = {
-  Session,
   tokenChecker,
+  generateToken
 }
